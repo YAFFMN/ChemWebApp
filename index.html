@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organic Chemistry Ch. 5 — Study & Quiz App</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #ffffff;
+    --bg2:       #f5f5f4;
+    --bg3:       #eeece8;
+    --text:      #1a1a18;
+    --text2:     #6b6b67;
+    --border:    rgba(0,0,0,0.12);
+    --border2:   rgba(0,0,0,0.22);
+    --purple:    #7F77DD;
+    --purple-bg: #EEEDFE;
+    --purple-t:  #3C3489;
+    --teal-bg:   #E1F5EE;
+    --teal-t:    #085041;
+    --blue-bg:   #E6F1FB;
+    --blue-t:    #0C447C;
+    --amber-bg:  #FAEEDA;
+    --amber-t:   #633806;
+    --coral-bg:  #FAECE7;
+    --coral-t:   #712B13;
+    --green-bg:  #EAF3DE;
+    --green-t:   #173404;
+    --green-b:   #3B6D11;
+    --red-bg:    #FCEBEB;
+    --red-t:     #501313;
+    --red-b:     #A32D2D;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font:      system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono:      'Courier New', monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:      #1c1c1a;
+      --bg2:     #252523;
+      --bg3:     #2e2e2b;
+      --text:    #e8e6e0;
+      --text2:   #8a8a84;
+      --border:  rgba(255,255,255,0.10);
+      --border2: rgba(255,255,255,0.20);
+      --purple-bg:#26215C; --purple-t:#CECBF6;
+      --teal-bg:#04342C;   --teal-t:#9FE1CB;
+      --blue-bg:#042C53;   --blue-t:#B5D4F4;
+      --amber-bg:#412402;  --amber-t:#FAC775;
+      --coral-bg:#4A1B0C;  --coral-t:#F5C4B3;
+      --green-bg:#173404;  --green-t:#C0DD97;
+      --red-bg:#501313;    --red-t:#F7C1C1;
+    }
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg3);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────── */
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .app-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .app-header h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .app-header p {
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  /* ── Tab Bar ──────────────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+  .tab {
+    flex: 1;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text2);
+    border-radius: var(--radius-md);
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab.active {
+    background: var(--bg);
+    color: var(--text);
+    border: 0.5px solid var(--border);
+  }
+
+  /* ── Panels ───────────────────────────────────────────────── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Cards ────────────────────────────────────────────────── */
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Metric Grid ──────────────────────────────────────────── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .metric {
+    background: var(--bg2);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+  }
+  .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .metric-val   { font-size: 22px; font-weight: 500; color: var(--text); }
+
+  /* ── Badges ───────────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: var(--radius-md);
+    margin: 0 4px 4px 0;
+  }
+  .b-blue   { background: var(--blue-bg);   color: var(--blue-t); }
+  .b-purple { background: var(--purple-bg); color: var(--purple-t); }
+  .b-teal   { background: var(--teal-bg);   color: var(--teal-t); }
+  .b-amber  { background: var(--amber-bg);  color: var(--amber-t); }
+  .b-coral  { background: var(--coral-bg);  color: var(--coral-t); }
+
+  /* ── Typography ───────────────────────────────────────────── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text2);
+    margin: 1.5rem 0 0.75rem;
+  }
+  h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.75rem; }
+  h3 { font-size: 15px; font-weight: 500; margin-bottom: 0.5rem; }
+  p  { font-size: 14px; line-height: 1.7; color: var(--text2); }
+  p.body { color: var(--text); }
+
+  .formula {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg2);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--text);
+    display: inline-block;
+  }
+
+  /* ── Tables ───────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  th { text-align: left; padding: 8px 10px; font-weight: 500; border-bottom: 0.5px solid var(--border); color: var(--text2); }
+  td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; }
+
+  /* ── Quiz ─────────────────────────────────────────────────── */
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .progress-bar { width: 100%; height: 4px; background: var(--bg2); border-radius: 2px; margin-bottom: 1.5rem; }
+  .progress-fill { height: 4px; background: var(--purple); border-radius: 2px; transition: width 0.3s; }
+  .q-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+  .q-type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: var(--radius-md);
+    background: var(--purple-bg);
+    color: var(--purple-t);
+    margin-bottom: 1rem;
+  }
+  .q-text { font-size: 15px; font-weight: 500; line-height: 1.6; margin-bottom: 1.25rem; color: var(--text); }
+
+  /* Options */
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.12s;
+    font-family: var(--font);
+  }
+  .opt:hover:not(:disabled) { background: var(--bg2); }
+  .opt.correct { background: var(--green-bg); border-color: var(--green-b); color: var(--green-t); }
+  .opt.wrong   { background: var(--red-bg);   border-color: var(--red-b);   color: var(--red-t); }
+  .opt:disabled { cursor: default; }
+
+  /* True / False */
+  .tf-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .tf-btn {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    transition: background 0.12s;
+  }
+  .tf-btn:hover:not(:disabled) { background: var(--bg2); }
+  .tf-btn.correct { background: var(--green-bg); border-color: var(--green-b); color: var(--green-t); }
+  .tf-btn.wrong   { background: var(--red-bg);   border-color: var(--red-b);   color: var(--red-t); }
+  .tf-btn:disabled { cursor: default; }
+
+  /* Short Answer */
+  .sa-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 10px;
+    font-family: var(--font);
+  }
+  .sa-input:focus { outline: none; border-color: var(--purple); }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 1rem;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.correct { background: var(--green-bg); color: var(--green-t); }
+  .feedback.wrong   { background: var(--red-bg);   color: var(--red-t); }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    transition: background 0.12s;
+    margin-top: 1rem;
+  }
+  .btn:hover { background: var(--bg2); }
+  .btn:active { transform: scale(0.98); }
+
+  /* Results */
+  .score-circle {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 3px solid var(--purple);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 1.5rem auto;
+  }
+  .score-num   { font-size: 30px; font-weight: 500; }
+  .score-lbl   { font-size: 11px; color: var(--text2); }
+
+  /* ── Q&A ──────────────────────────────────────────────────── */
+  .qa-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 10px;
+    font-family: var(--font);
+  }
+  .qa-input:focus { outline: none; border-color: var(--purple); }
+  .qa-response {
+    margin-top: 1rem;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    background: var(--bg2);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    display: none;
+    border-left: 3px solid var(--purple);
+  }
+  .qa-example {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 14px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text2);
+    font-family: var(--font);
+    transition: background 0.12s, color 0.12s;
+  }
+  .qa-example:hover { background: var(--bg2); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="app-header">
+    <h1>Organic Chemistry — Chapter 5</h1>
+    <p>Roshetta Final Revision · Dr. Nasser Elbatal · Study Notes, Quiz & Q&A</p>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('notes')">Study Notes</button>
+    <button class="tab"        onclick="switchTab('quiz')">Mini Quiz</button>
+    <button class="tab"        onclick="switchTab('qa')">Ask a Question</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANEL 1: STUDY NOTES
+  ══════════════════════════════════════════ -->
+  <div id="notes" class="panel active">
+
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Hydrocarbon families</div><div class="metric-val">5</div></div>
+      <div class="metric"><div class="metric-label">Key compounds</div><div class="metric-val">30+</div></div>
+      <div class="metric"><div class="metric-label">Reaction types</div><div class="metric-val">8</div></div>
+      <div class="metric"><div class="metric-label">Quiz questions</div><div class="metric-val">25</div></div>
+    </div>
+
+    <!-- Family Overview -->
+    <div class="section-title">Hydrocarbon families</div>
+    <div class="card">
+      <span class="badge b-blue">Alkanes CₙH₂ₙ₊₂</span>
+      <span class="badge b-purple">Alkenes CₙH₂ₙ</span>
+      <span class="badge b-teal">Alkynes CₙH₂ₙ₋₂</span>
+      <span class="badge b-amber">Cycloalkanes CₙH₂ₙ</span>
+      <span class="badge b-coral">Arenes CₙHₙ</span>
+      <table>
+        <tr><th>Property</th><th>Alkanes</th><th>Alkenes</th><th>Alkynes</th></tr>
+        <tr><td>Bond type</td><td>Single (σ only)</td><td>C=C double</td><td>C≡C triple</td></tr>
+        <tr><td>1st member</td><td>Methane CH₄</td><td>Ethene C₂H₄</td><td>Ethyne C₂H₂</td></tr>
+        <tr><td>Reaction type</td><td>Substitution only</td><td>Addition</td><td>Addition</td></tr>
+        <tr><td>Activity</td><td>Least active</td><td>Middle</td><td>Most active</td></tr>
+        <tr><td>Physical state (C₁–C₄)</td><td>Gases</td><td>C₂–C₄ gases</td><td>—</td></tr>
+      </table>
+    </div>
+
+    <!-- Methane -->
+    <div class="section-title">Methane (CH₄) reactions</div>
+    <div class="card">
+      <h3>Halogenation (400°C / UV)</h3>
+      <p style="margin-top:6px;color:var(--text)">
+        + Cl₂ → <span class="formula">CH₃Cl</span> chloromethane &nbsp;|&nbsp;
+        + 2Cl₂ → <span class="formula">CH₂Cl₂</span> dichloromethane<br>
+        + 3Cl₂ → <span class="formula">CHCl₃</span> chloroform &nbsp;|&nbsp;
+        + 4Cl₂ → <span class="formula">CCl₄</span> carbon tetrachloride
+      </p>
+      <p style="margin-top:10px;color:var(--text)">
+        Complete burning: <span class="formula">CH₄ + 2O₂ → CO₂ + 2H₂O + E</span><br>
+        1000°C / no air: <span class="formula">CH₄ → C (black carbon) + 2H₂</span><br>
+        Water gas (725°C, catalyst): <span class="formula">CH₄ + H₂O → CO + 3H₂</span><br>
+        Rapid quenching (1500°C): <span class="formula">CH₄ → C₂H₂ + 3H₂</span>
+      </p>
+    </div>
+
+    <!-- Ethene -->
+    <div class="section-title">Ethene (CH₂=CH₂) reactions</div>
+    <div class="card">
+      <p style="color:var(--text)">
+        + Br₂/CCl₄ → <span class="formula">CH₂Br–CH₂Br</span> 1,2-dibromoethane <em>(pi bond test)</em><br>
+        + HBr → <span class="formula">CH₃CH₂Br</span> bromoethane<br>
+        + H₂ / Ni 150–300°C → <span class="formula">CH₃–CH₃</span> ethane<br>
+        + H₂O / KMnO₄ alkaline → <span class="formula">CH₂OH–CH₂OH</span> ethylene glycol<br>
+        Dehydration (180°C, conc. H₂SO₄): Ethanol → Ethene + H₂O<br>
+        Hydration (110°C, dil. H₂SO₄): Ethene + H₂O → Ethanol
+      </p>
+    </div>
+
+    <!-- Ethyne -->
+    <div class="section-title">Ethyne / Acetylene (HC≡CH) reactions</div>
+    <div class="card">
+      <p style="color:var(--text)">
+        Preparation: <span class="formula">CaC₂ + 2H₂O → C₂H₂ + Ca(OH)₂</span><br>
+        + HOH / H₂SO₄ 40%, HgSO₄, 60°C → <span class="formula">CH₃CHO</span> acetaldehyde<br>
+        + HCl → <span class="formula">CH₂=CHCl</span> vinyl chloride (1-chloroethene)<br>
+        + 2HCl → <span class="formula">CH₃CHCl₂</span> 1,1-dichloroethane<br>
+        + Br₂ (step 1) → 1,2-dibromoethene &nbsp;|&nbsp; + Br₂ (step 2) → 1,1,2,2-tetrabromoethane<br>
+        Trimerization (red hot Ni): <span class="formula">3C₂H₂ → C₆H₆</span> (benzene)<br>
+        Complete burning (oxyacetylene): <span class="formula">4CO₂ + 2H₂O + energy (5000°C)</span>
+      </p>
+    </div>
+
+    <!-- Benzene -->
+    <div class="section-title">Benzene (C₆H₆) reactions</div>
+    <div class="card">
+      <h3>Addition reactions</h3>
+      <p style="margin-top:6px;color:var(--text)">
+        + 3H₂ / heat/pressure/cat → <span class="formula">C₆H₁₂</span> cyclohexane<br>
+        + 3Cl₂ (UV) → <span class="formula">C₆H₆Cl₆</span> Gamixane (BHC)
+      </p>
+      <h3 style="margin-top:1rem">Substitution reactions (FeCl₃ controls)</h3>
+      <p style="margin-top:6px;color:var(--text)">
+        Halogenation: C₆H₆ + Cl₂ → C₆H₅Cl + HCl (UV/FeCl₃)<br>
+        Friedel-Crafts: C₆H₆ + CH₃Cl → C₇H₈ + HCl (anhydrous AlCl₃)<br>
+        Nitration: C₆H₆ + HNO₃ → C₆H₅NO₂ + H₂O (conc. H₂SO₄, 50°C)<br>
+        Sulphonation: C₆H₆ + H₂SO₄ (conc.) → C₆H₅SO₃H + H₂O
+      </p>
+    </div>
+
+    <!-- Key Compounds Table -->
+    <div class="section-title">Key compounds & formulas</div>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <tr><th>Common name</th><th>IUPAC name</th><th>Formula</th></tr>
+        <tr><td>Glycerol</td><td>1,2,3-trihydroxypropane</td><td>C₃H₈O₃</td></tr>
+        <tr><td>Phenol</td><td>Hydroxybenzene</td><td>C₆H₆O</td></tr>
+        <tr><td>Toluene</td><td>Methylbenzene</td><td>C₇H₈</td></tr>
+        <tr><td>Chloroform</td><td>Trichloromethane</td><td>CHCl₃</td></tr>
+        <tr><td>TNT</td><td>2,4,6-trinitrotoluene</td><td>C₇H₅N₃O₆</td></tr>
+        <tr><td>TNG</td><td>Trinitro glycerine</td><td>C₃H₅N₃O₉</td></tr>
+        <tr><td>Picric acid</td><td>2,4,6-trinitrophenol</td><td>C₆H₃N₃O₇</td></tr>
+        <tr><td>Formaldehyde</td><td>Methanal</td><td>CH₂O</td></tr>
+        <tr><td>Acetaldehyde</td><td>Ethanal</td><td>C₂H₄O</td></tr>
+        <tr><td>Benzoic acid</td><td>Benzene carboxylic acid</td><td>C₇H₆O₂</td></tr>
+        <tr><td>Gamixane</td><td>Hexachloro cyclohexane</td><td>C₆H₆Cl₆</td></tr>
+        <tr><td>Freons</td><td>Tetrafluoromethane / dichlorodifluoromethane</td><td>CF₄ or CCl₂F₂</td></tr>
+        <tr><td>Catechol</td><td>1,2-dihydroxy benzene</td><td>C₆H₆O₂</td></tr>
+        <tr><td>Pyrogallol</td><td>1,2,3-trihydroxy benzene</td><td>C₆H₆O₃</td></tr>
+        <tr><td>Ethylene glycol</td><td>1,2-dihydroxy ethane</td><td>C₂H₆O₂</td></tr>
+        <tr><td>Halothane</td><td>2-bromo-2-chloro-1,1,1-trifluoroethane</td><td>C₂HBrClF₃</td></tr>
+        <tr><td>Sorbitol</td><td>Sorbitol</td><td>C₆H₁₄O₆</td></tr>
+      </table>
+    </div>
+
+    <!-- Rules -->
+    <div class="section-title">Key rules & exam tricks</div>
+    <div class="card">
+      <p style="color:var(--text)">
+        • Markovnikoff's rule → only for asymmetric alkene/alkyne + asymmetric reagent<br>
+        • Bromine water decolorizes = pi bond present (alkene or alkyne)<br>
+        • FeCl₃ = controller of benzene substitution reactions<br>
+        • O-substituent directs meta, EXCEPT –OH → ortho & para<br>
+        • Hydration of ethene → primary alcohol; any other alkene → secondary or tertiary<br>
+        • 1st symmetric alkene/alkyne = Ethene / Ethyne<br>
+        • 1st asymmetric alkene/alkyne = Propene / Propyne<br>
+        • Dry distillation of sodium acetate (2C) → methane (1C)<br>
+        • Thermal decomposition of ethyl hydrogen sulphate → ethene<br>
+        • Hydrolysis of ethyl hydrogen sulphate → ethanol<br>
+        • Catalytic reforming of heptane → toluene<br>
+        • Use Br₂/CCl₄ to differentiate alkane (single bond) vs alkene/alkyne (pi bond)
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANEL 2: QUIZ
+  ══════════════════════════════════════════ -->
+  <div id="quiz" class="panel">
+
+    <!-- Start Screen -->
+    <div id="quiz-start">
+      <div class="card">
+        <h2>Mini Quiz — Organic Chemistry Ch. 5</h2>
+        <p style="margin-bottom:1rem">
+          25 questions drawn exclusively from the PDF. Randomized each attempt.
+          Includes multiple choice, true/false, and short answer.
+        </p>
+        <div class="metric-grid" style="margin-bottom:1.25rem">
+          <div class="metric"><div class="metric-label">Total questions</div><div class="metric-val">25</div></div>
+          <div class="metric"><div class="metric-label">Types</div><div class="metric-val">3</div></div>
+          <div class="metric"><div class="metric-label">Pass score</div><div class="metric-val">70%</div></div>
+        </div>
+        <button class="btn" onclick="startQuiz()">Start quiz →</button>
+      </div>
+    </div>
+
+    <!-- Active Quiz -->
+    <div id="quiz-active" style="display:none">
+      <div class="q-meta">
+        <span id="q-counter">Question 1 of 25</span>
+        <span id="q-score-live">Score: 0</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="prog" style="width:4%"></div>
+      </div>
+      <div class="q-card" id="q-card"></div>
+      <button class="btn" id="btn-next" onclick="nextQ()" style="display:none">Next question →</button>
+    </div>
+
+    <!-- Results -->
+    <div id="quiz-results" style="display:none">
+      <div class="card" style="text-align:center">
+        <h2>Quiz complete</h2>
+        <div class="score-circle">
+          <span class="score-num" id="final-pct">0%</span>
+          <span class="score-lbl">score</span>
+        </div>
+        <p id="final-msg" style="color:var(--text);margin-bottom:1.25rem"></p>
+        <div class="metric-grid" style="max-width:280px;margin:0 auto 1.25rem">
+          <div class="metric"><div class="metric-label">Correct</div><div class="metric-val" id="r-correct">0</div></div>
+          <div class="metric"><div class="metric-label">Wrong</div><div class="metric-val" id="r-wrong">0</div></div>
+        </div>
+        <button class="btn" onclick="restartQuiz()">Try again →</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANEL 3: Q&A
+  ══════════════════════════════════════════ -->
+  <div id="qa" class="panel">
+    <div class="card">
+      <h2>Ask about the PDF</h2>
+      <p style="margin-bottom:1rem">
+        Type any question about Organic Chemistry Chapter 5.
+        Answers are sourced strictly from the PDF content.
+      </p>
+      <input class="qa-input" id="qa-input"
+             placeholder="e.g. What is the product when ethyne reacts with HCl?"
+             onkeydown="if(event.key==='Enter')answerQuestion()" />
+      <button class="btn" onclick="answerQuestion()">Get answer →</button>
+      <div class="qa-response" id="qa-response"></div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text)">Example questions:</p>
+      <button class="qa-example" onclick="setQ('What is the common name for trichloromethane?')">What is the common name for trichloromethane?</button>
+      <button class="qa-example" onclick="setQ('How is benzene prepared from ethyne?')">How is benzene prepared from ethyne?</button>
+      <button class="qa-example" onclick="setQ('What reagent is used to test for pi bonds?')">What reagent is used to test for pi bonds?</button>
+      <button class="qa-example" onclick="setQ('What is Markovnikoff\'s rule?')">What is Markovnikoff's rule?</button>
+      <button class="qa-example" onclick="setQ('What is the formula and common name of Gamixane?')">What is the formula and common name of Gamixane?</button>
+      <button class="qa-example" onclick="setQ('How is ethyne prepared from calcium carbide?')">How is ethyne prepared from calcium carbide?</button>
+      <button class="qa-example" onclick="setQ('What is the molecular formula of TNT?')">What is the molecular formula of TNT?</button>
+      <button class="qa-example" onclick="setQ('What is water gas and how is it formed?')">What is water gas and how is it formed?</button>
+      <button class="qa-example" onclick="setQ('What is the Friedel-Crafts reaction?')">What is the Friedel-Crafts reaction?</button>
+      <button class="qa-example" onclick="setQ('What is the difference between alkanes alkenes and alkynes?')">What is the difference between alkanes, alkenes, and alkynes?</button>
+    </div>
+  </div>
+
+</div><!-- /.app -->
+
+<script>
+/* ════════════════════════════════════════════════
+   DATA — all questions and Q&A knowledge base
+   sourced strictly from the uploaded PDF
+════════════════════════════════════════════════ */
+
+const ALL_QUESTIONS = [
+  // ── Multiple Choice ──────────────────────────
+  {type:'mc', q:'What is the molecular formula of Methane?',
+   opts:['CH₄','C₂H₄','C₂H₂','CH₂'], ans:0,
+   exp:'Methane is the 1st alkane: CH₄, general formula CₙH₂ₙ₊₂ where n=1.'},
+
+  {type:'mc', q:'What type of reaction do alkanes undergo?',
+   opts:['Addition only','Substitution only','Both addition and substitution','Neither'], ans:1,
+   exp:'Alkanes have only sigma bonds (no pi bond), so they only undergo substitution reactions.'},
+
+  {type:'mc', q:'What is produced when ethyne reacts with HOH using H₂SO₄ (40%) and HgSO₄ at 60°C?',
+   opts:['Ethanol','Acetaldehyde (ethanal)','Ethylene glycol','Acetic acid'], ans:1,
+   exp:'Ethyne + HOH / H₂SO₄ 40%, HgSO₄, 60°C → CH₃CHO (acetaldehyde/ethanal).'},
+
+  {type:'mc', q:'Which catalyst is used in the trimerization of ethyne to produce benzene?',
+   opts:['Platinum','Red hot nickel tube','Anhydrous AlCl₃','FeCl₃'], ans:1,
+   exp:'3C₂H₂ → C₆H₆ (benzene) using a red hot nickel tube.'},
+
+  {type:'mc', q:'What is the common name for CHCl₃?',
+   opts:['Carbon tetrachloride','Freon','Chloroform','Halothane'], ans:2,
+   exp:'CHCl₃ (trichloromethane) has the common name Chloroform.'},
+
+  {type:'mc', q:'What is the product of reacting ethene with Br₂/CCl₄?',
+   opts:['1,1-dibromoethane','1,2-dibromoethane','Bromoethane','Vinyl bromide'], ans:1,
+   exp:'CH₂=CH₂ + Br₂/CCl₄ → CH₂Br–CH₂Br (1,2-dibromoethane). This decolorizes bromine water.'},
+
+  {type:'mc', q:'What conditions are required for substitution halogenation of benzene?',
+   opts:['UV light only','FeCl₃ + UV','Anhydrous AlCl₃','Heat and pressure'], ans:1,
+   exp:'Benzene substitution halogenation requires UV/FeCl₃. FeCl₃ is the controller of substitution.'},
+
+  {type:'mc', q:'What is the molecular formula of TNT?',
+   opts:['C₆H₃N₃O₇','C₃H₅N₃O₉','C₇H₅N₃O₆','C₆H₁₄O₆'], ans:2,
+   exp:'TNT (2,4,6-trinitrotoluene) has the molecular formula C₇H₅N₃O₆.'},
+
+  {type:'mc', q:'What is produced when methane reacts with water at 725°C with a catalyst?',
+   opts:['Black carbon + H₂','CO + 3H₂ (water gas)','CO₂ + H₂O','C₂H₂ + H₂'], ans:1,
+   exp:'CH₄ + H₂O (catalyst/725°C) → CO + 3H₂ — this mixture is called water gas.'},
+
+  {type:'mc', q:'What is the IUPAC name for ethylene glycol?',
+   opts:['1,2-dihydroxy propane','1,2-dihydroxy ethane','Ethanol','Glycerol'], ans:1,
+   exp:'Ethylene glycol = 1,2-dihydroxy ethane, molecular formula C₂H₆O₂.'},
+
+  {type:'mc', q:'What reagent is used in Friedel-Crafts alkylation of benzene?',
+   opts:['FeCl₃','Anhydrous AlCl₃','Conc. H₂SO₄','Red hot Ni'], ans:1,
+   exp:'Friedel-Crafts: C₆H₆ + CH₃Cl → C₇H₈ + HCl using anhydrous AlCl₃.'},
+
+  {type:'mc', q:'Which compound is commonly called Picric acid?',
+   opts:['2,4,6-trinitrotoluene','2,4,6-trinitrophenol','Nitrobenzene','Pyrogallol'], ans:1,
+   exp:'2,4,6-trinitrophenol is known as Picric acid, formula C₆H₃N₃O₇.'},
+
+  {type:'mc', q:'What is the general formula for cycloalkanes?',
+   opts:['CₙH₂ₙ₊₂','CₙH₂ₙ','CₙH₂ₙ₋₂','CₙHₙ'], ans:1,
+   exp:'Cycloalkanes: CₙH₂ₙ. Their first member has 3 carbons (cyclopropane).'},
+
+  {type:'mc', q:'How is ethyne prepared in the laboratory?',
+   opts:['Dry distillation of sodium acetate','Dropping water on calcium carbide','Dehydration of ethanol','Rapid quenching of methane'], ans:1,
+   exp:'CaC₂ + 2H₂O → C₂H₂ + Ca(OH)₂ — dropping water on calcium carbide.'},
+
+  {type:'mc', q:'What is the molecular formula of Glycerol?',
+   opts:['C₃H₈O₃','C₆H₁₄O₆','C₃H₆O₂','C₃H₈O'], ans:0,
+   exp:'Glycerol (1,2,3-trihydroxypropane) has the molecular formula C₃H₈O₃.'},
+
+  // ── True / False ─────────────────────────────
+  {type:'tf', q:'Alkanes can undergo addition reactions because they have pi bonds.',
+   ans:false, exp:'FALSE. Alkanes have only sigma bonds — no pi bond — so they only undergo substitution.'},
+
+  {type:'tf', q:'The decolorization of bromine water confirms the presence of a pi bond.',
+   ans:true, exp:'TRUE. Alkenes and alkynes decolorize Br₂/CCl₄ due to addition across the pi bond.'},
+
+  {type:'tf', q:'Trimerization of ethyne produces cyclohexane.',
+   ans:false, exp:'FALSE. 3C₂H₂ → C₆H₆ (benzene) using a red hot Ni tube, NOT cyclohexane.'},
+
+  {type:'tf', q:'FeCl₃ controls benzene substitution reactions.',
+   ans:true, exp:'TRUE. FeCl₃ acts as a Lewis acid catalyst in benzene substitution reactions.'},
+
+  {type:'tf', q:'The –OH group on a benzene ring directs incoming substituents to the meta position.',
+   ans:false, exp:'FALSE. –OH directs to ortho and para positions. Only other O-containing groups (except OH) direct to meta.'},
+
+  {type:'tf', q:'Hydration of ethene gives a primary alcohol.',
+   ans:true, exp:'TRUE. Catalytic hydration of ethene (110°C, dil. H₂SO₄) gives ethanol, a primary alcohol.'},
+
+  // ── Short Answer ─────────────────────────────
+  {type:'sa', q:'Write the equation for the preparation of ethyne from calcium carbide.',
+   ans:'CaC₂ + 2H₂O → C₂H₂ + Ca(OH)₂',
+   exp:'Calcium carbide reacts with two moles of water to give ethyne and calcium hydroxide.'},
+
+  {type:'sa', q:'What is the common name for C₆H₃N₃O₇?',
+   ans:'Picric acid',
+   exp:'C₆H₃N₃O₇ is the molecular formula of 2,4,6-trinitrophenol, commonly called Picric acid.'},
+
+  {type:'sa', q:'What product forms when benzene reacts with 3Cl₂ under UV light?',
+   ans:'C₆H₆Cl₆ (Gamixane or BHC)',
+   exp:'C₆H₆ + 3Cl₂ (UV) → C₆H₆Cl₆ (Hexachloro cyclohexane), known as Gamixane or BHC.'},
+
+  {type:'sa', q:'What is the first asymmetric alkene?',
+   ans:'Propene',
+   exp:'The first asymmetric alkene is Propene (CH₃–CH=CH₂). Ethene is symmetric.'},
+];
+
+/* ── Q&A Knowledge Base ─────────────────────────────────────── */
+const QA_KB = [
+  {keys:['trichloromethane','chcl3','chloroform'],
+   ans:'The common name for trichloromethane (CHCl₃) is <strong>Chloroform</strong>. It is produced in the 3rd step of methane halogenation (CH₄ + 3Cl₂ at 400°C/UV).'},
+
+  {keys:['benzene','ethyne','trimerization','prepared from ethyne'],
+   ans:'Benzene is prepared from ethyne by <strong>trimerization</strong>: <em>3C₂H₂ → C₆H₆</em>, using a <strong>red hot nickel tube</strong> as the catalyst.'},
+
+  {keys:['pi bond','test','bromine water','decolorize','differentiate alkane'],
+   ans:'<strong>Bromine water (Br₂/CCl₄)</strong> is used to test for pi bonds. Decolorization = pi bond is present (alkene or alkyne). Alkanes do NOT decolorize it.'},
+
+  {keys:['markovnikoff','rule'],
+   ans:'<strong>Markovnikoff\'s rule</strong> is applied only when you have both: (1) an <em>asymmetric</em> alkene or alkyne, AND (2) an <em>asymmetric</em> reagent. The hydrogen adds to the more substituted carbon.'},
+
+  {keys:['gamixane','bhc','hexachloro'],
+   ans:'<strong>Gamixane</strong> (common name) = IUPAC: Hexachloro cyclohexane, formula <strong>C₆H₆Cl₆</strong>, general formula CₙHₙClₙ. Formed by addition of 3Cl₂ to benzene under UV light.'},
+
+  {keys:['calcium carbide','ethyne prepared','acetylene prepared'],
+   ans:'Ethyne is prepared by dropping water on calcium carbide: <strong>CaC₂ + 2H₂O → C₂H₂ + Ca(OH)₂</strong>.'},
+
+  {keys:['methane','halogenation','chloromethane','carbon tetrachloride'],
+   ans:'Methane halogenation (400°C, UV/Cl₂): +Cl₂ → CH₃Cl | +2Cl₂ → CH₂Cl₂ | +3Cl₂ → CHCl₃ (chloroform) | +4Cl₂ → CCl₄ (carbon tetrachloride).'},
+
+  {keys:['glycerol','1,2,3-trihydroxypropane'],
+   ans:'Glycerol: IUPAC = <strong>1,2,3-trihydroxypropane</strong>, molecular formula <strong>C₃H₈O₃</strong>, general formula CₙH₂ₙ₊₂O₃.'},
+
+  {keys:['tnt','trinitrotoluene'],
+   ans:'TNT: IUPAC = <strong>2,4,6-trinitrotoluene</strong>, molecular formula <strong>C₇H₅N₃O₆</strong>.'},
+
+  {keys:['picric acid','trinitrophenol'],
+   ans:'Picric acid: IUPAC = <strong>2,4,6-trinitrophenol</strong>, molecular formula <strong>C₆H₃N₃O₇</strong>.'},
+
+  {keys:['water gas'],
+   ans:'Water gas is produced when methane reacts with steam at 725°C with a catalyst: <strong>CH₄ + H₂O → CO + 3H₂</strong>.'},
+
+  {keys:['ethylene glycol','1,2-dihydroxy ethane'],
+   ans:'Ethylene glycol: IUPAC = <strong>1,2-dihydroxy ethane</strong>, formula <strong>C₂H₆O₂</strong>. Formed from ethene + H₂O using KMnO₄ in alkaline medium.'},
+
+  {keys:['alkane','substitution','no addition','difference between'],
+   ans:'<strong>Alkanes</strong> (CₙH₂ₙ₊₂): substitution only, no pi bond. <strong>Alkenes</strong> (CₙH₂ₙ): addition, one C=C. <strong>Alkynes</strong> (CₙH₂ₙ₋₂): addition, one C≡C. Activity: Alkanes < Alkenes < Alkynes.'},
+
+  {keys:['benzene preparation','benzene from','how is benzene prepared'],
+   ans:'Benzene preparation: (1) Industry: coal tar fractional distillation at 80–82°C. (2) From hexane (UV). (3) Trimerization of ethyne (red hot Ni). (4) From phenol + Zn (Al/reduction). (5) Lab: dry distillation of sodium benzoate (C₆H₅COONa + NaOH + CaO + heat).'},
+
+  {keys:['fecl3','controller'],
+   ans:'<strong>FeCl₃</strong> is described as "the controller" of benzene substitution reactions. It acts as a Lewis acid catalyst enabling halogenation by substitution.'},
+
+  {keys:['freon','tetrafluoromethane','dichlorodifluoromethane'],
+   ans:'Freons: IUPAC = Tetrafluoromethane OR dichlorodifluoromethane, formula <strong>CF₄ or CCl₂F₂</strong>.'},
+
+  {keys:['vinyl chloride','1-chloroethene'],
+   ans:'Vinyl chloride (IUPAC: 1-chloroethene) is formed when ethyne reacts with HCl: <strong>HC≡CH + HCl → CH₂=CHCl</strong>.'},
+
+  {keys:['phenol','hydroxybenzene','carbolic'],
+   ans:'Phenol: IUPAC = <strong>Hydroxybenzene</strong>, molecular formula <strong>C₆H₆O</strong>, also called Carbolic acid, general formula CₙHₙO.'},
+
+  {keys:['toluene','methylbenzene'],
+   ans:'Toluene: IUPAC = <strong>Methylbenzene</strong>, molecular formula <strong>C₇H₈</strong>. Obtained by catalytic reforming of heptane.'},
+
+  {keys:['halothane'],
+   ans:'Halothane: IUPAC = <strong>2-bromo-2-chloro-1,1,1-trifluoroethane</strong>, formula <strong>C₂HBrClF₃</strong>.'},
+
+  {keys:['acetaldehyde','ethanal'],
+   ans:'Acetaldehyde: IUPAC = <strong>Ethanal</strong>, formula <strong>C₂H₄O</strong>. Formed from ethyne + HOH (H₂SO₄ 40%, HgSO₄, 60°C).'},
+
+  {keys:['formaldehyde','methanal'],
+   ans:'Formaldehyde: IUPAC = <strong>Methanal</strong>, formula <strong>CH₂O</strong>, general formula CₙH₂ₙO.'},
+
+  {keys:['benzoic acid','benzene carboxylic'],
+   ans:'Benzoic acid: IUPAC = <strong>Benzene Carboxylic acid</strong>, formula <strong>C₇H₆O₂</strong>, general formula CₙHₙ₋₁O₂.'},
+
+  {keys:['dry distillation','sodium acetate'],
+   ans:'Dry distillation of sodium acetate: <strong>CH₃COONa + NaOH + CaO → CH₄ + Na₂CO₃</strong>. This is how methane is made from a 2-carbon compound.'},
+
+  {keys:['nitration','benzene','hno3'],
+   ans:'Nitration of benzene: <strong>C₆H₆ + HNO₃ → C₆H₅NO₂ + H₂O</strong>, conditions: conc. H₂SO₄, 50°C.'},
+
+  {keys:['sulphonation','sulfonation'],
+   ans:'Sulphonation of benzene: <strong>C₆H₆ + H₂SO₄ (conc.) → C₆H₅SO₃H + H₂O</strong>.'},
+
+  {keys:['friedel','crafts','alkylation'],
+   ans:'Friedel-Crafts alkylation: <strong>C₆H₆ + CH₃Cl → C₇H₈ + HCl</strong>, catalyst: anhydrous AlCl₃. This is a substitution reaction of benzene.'},
+
+  {keys:['cycloalkane','cyclopropane','cyclic'],
+   ans:'Cycloalkanes (CₙH₂ₙ): 1st member = cyclopropane (3C). No CH₃ group in ring. Stability increases with carbon number. All sigma bonds → unreactive, EXCEPT cyclopropane.'},
+
+  {keys:['sorbitol'],
+   ans:'Sorbitol: IUPAC = Sorbitol, formula <strong>C₆H₁₄O₆</strong>, general formula CₙH₂ₙ₊₂O₆.'},
+
+  {keys:['catechol','1,2-dihydroxy benzene'],
+   ans:'Catechol: IUPAC = <strong>1,2-dihydroxy benzene</strong>, formula <strong>C₆H₆O₂</strong>, general formula CₙHₙO₂.'},
+
+  {keys:['pyrogallol'],
+   ans:'Pyrogallol: IUPAC = <strong>1,2,3-trihydroxy benzene</strong>, formula <strong>C₆H₆O₃</strong>, general formula CₙHₙO₃.'},
+];
+
+
+/* ════════════════════════════════════════════
+   QUIZ ENGINE
+════════════════════════════════════════════ */
+let questions=[], qi=0, score=0, wrongList=[];
+
+function shuffle(arr){
+  let a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function startQuiz(){
+  questions=shuffle(ALL_QUESTIONS);
+  qi=0; score=0; wrongList=[];
+  document.getElementById('quiz-start').style.display='none';
+  document.getElementById('quiz-results').style.display='none';
+  document.getElementById('quiz-active').style.display='block';
+  renderQ();
+}
+
+function renderQ(){
+  const q=questions[qi], total=questions.length;
+  document.getElementById('q-counter').textContent=`Question ${qi+1} of ${total}`;
+  document.getElementById('q-score-live').textContent=`Score: ${score}`;
+  document.getElementById('prog').style.width=`${Math.round((qi/total)*100)}%`;
+  document.getElementById('btn-next').style.display='none';
+
+  let html=`<div class="q-type-badge">${
+    q.type==='mc'?'Multiple choice':q.type==='tf'?'True / False':'Short answer'
+  }</div><div class="q-text">${q.q}</div>`;
+
+  if(q.type==='mc'){
+    q.opts.forEach((o,i)=>{
+      html+=`<button class="opt" id="opt${i}" onclick="checkMC(${i})">${o}</button>`;
+    });
+  } else if(q.type==='tf'){
+    html+=`<div class="tf-row">
+      <button class="tf-btn" id="tf-true"  onclick="checkTF(true)">True</button>
+      <button class="tf-btn" id="tf-false" onclick="checkTF(false)">False</button>
+    </div>`;
+  } else {
+    html+=`<input class="sa-input" id="sa-inp" placeholder="Type your answer here…"
+            onkeydown="if(event.key==='Enter')checkSA()" />
+           <button class="btn" onclick="checkSA()" style="margin-top:0">Check answer</button>`;
+  }
+  html+=`<div class="feedback" id="feedback"></div>`;
+  document.getElementById('q-card').innerHTML=html;
+}
+
+function showFeedback(correct, exp){
+  const fb=document.getElementById('feedback');
+  fb.style.display='block';
+  fb.className='feedback '+(correct?'correct':'wrong');
+  fb.innerHTML=(correct?'<strong>Correct!</strong> ':'<strong>Incorrect.</strong> ')+exp;
+  document.getElementById('btn-next').style.display='inline-block';
+  if(correct) score++;
+  else wrongList.push(qi);
+  document.getElementById('q-score-live').textContent=`Score: ${score}`;
+}
+
+function checkMC(i){
+  const q=questions[qi];
+  document.querySelectorAll('.opt').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===q.ans) b.classList.add('correct');
+    else if(idx===i && i!==q.ans) b.classList.add('wrong');
+  });
+  showFeedback(i===q.ans, q.exp);
+}
+
+function checkTF(val){
+  const q=questions[qi];
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  const correct=(val===q.ans);
+  document.getElementById(val?'tf-true':'tf-false').classList.add(correct?'correct':'wrong');
+  if(!correct) document.getElementById(q.ans?'tf-true':'tf-false').classList.add('correct');
+  showFeedback(correct, q.exp);
+}
+
+function checkSA(){
+  const q=questions[qi];
+  const inp=document.getElementById('sa-inp');
+  const userAns=inp.value.trim().toLowerCase();
+  const correct=userAns.length>1 && q.ans.toLowerCase()
+    .split(/[,\/\(\)\s]/).filter(w=>w.length>3)
+    .some(w=>userAns.includes(w));
+  inp.disabled=true;
+  inp.nextElementSibling.disabled=true;
+  showFeedback(correct, 'Correct answer: <strong>'+q.ans+'</strong>. '+q.exp);
+}
+
+function nextQ(){
+  qi++;
+  if(qi>=questions.length){ showResults(); return; }
+  renderQ();
+}
+
+function showResults(){
+  document.getElementById('quiz-active').style.display='none';
+  document.getElementById('quiz-results').style.display='block';
+  const pct=Math.round((score/questions.length)*100);
+  document.getElementById('final-pct').textContent=pct+'%';
+  document.getElementById('r-correct').textContent=score;
+  document.getElementById('r-wrong').textContent=questions.length-score;
+  document.getElementById('final-msg').textContent=
+    pct>=70?'Great work! You passed the quiz.':'Keep studying — review the notes and try again.';
+
+  let rev='<div class="section-title">Review — missed questions</div>';
+  if(wrongList.length===0){
+    rev+='<p style="font-size:14px;color:var(--text2)">You got all questions right!</p>';
+  } else {
+    wrongList.forEach(idx=>{
+      const q=questions[idx];
+      rev+=`<div class="card">
+        <p style="font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)">${q.q}</p>
+        <p style="font-size:13px">${q.exp}</p>
+      </div>`;
+    });
+  }
+  document.getElementById('review-list').innerHTML=rev;
+}
+
+function restartQuiz(){
+  document.getElementById('quiz-results').style.display='none';
+  document.getElementById('quiz-start').style.display='block';
+}
+
+
+/* ════════════════════════════════════════════
+   TAB SWITCHING
+════════════════════════════════════════════ */
+function switchTab(id){
+  const ids=['notes','quiz','qa'];
+  document.querySelectorAll('.tab').forEach((t,i)=>
+    t.classList.toggle('active', ids[i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+
+/* ════════════════════════════════════════════
+   Q&A ENGINE
+════════════════════════════════════════════ */
+function setQ(q){
+  switchTab('qa');
+  document.getElementById('qa-input').value=q;
+  answerQuestion();
+}
+
+function answerQuestion(){
+  const userQ=document.getElementById('qa-input').value.trim().toLowerCase();
+  const resp=document.getElementById('qa-response');
+  if(!userQ){ resp.style.display='none'; return; }
+
+  let answer=null;
+  for(const entry of QA_KB){
+    if(entry.keys.some(k=>userQ.includes(k))){
+      answer=entry.ans; break;
+    }
+  }
+
+  resp.style.display='block';
+  resp.innerHTML = answer
+    ? `<strong>Answer (from PDF):</strong><br><br>${answer}`
+    : `<strong>Not found:</strong> This information is not available in the provided document. 
+       Try rephrasing your question or check the Study Notes tab for relevant content.`;
+}
+</script>
+</body>
+</html>
